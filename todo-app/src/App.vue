@@ -4,14 +4,16 @@
     <div class="flex flex-row justify-center">
       <div class="todo-container">
         <TodoInputVue class="mb-1" v-model="newTodo" @keyup:enter="onEnter" />
-        <TodoItemVue
-          v-for="(todo, i) in filteredTodos"
-          :key="i"
-          :model-value="todo"
-          @update:model-value="onUpdate(i, $event)"
-          @delete-clicked="onDelete(i)"
-          class="mb-0.5"
-        />
+        <Draggable v-model="todos" item-key="value" group="todos">
+          <template #item="item">
+            <TodoItemVue
+              :model-value="item.element"
+              @update:model-value="onUpdate(item.index, $event)"
+              @delete-clicked="onDelete(item.index)"
+              class="mb-0.5"
+            />
+          </template>
+        </Draggable>
         <TodoFooterVue v-model="todos" @update:filtered-model-value="onUpdateFilter" />
       </div>
     </div>
@@ -24,6 +26,7 @@ import TodoInputVue from './components/TodoInput.vue'
 import { ref } from 'vue'
 import TodoItemVue, { type ModelValueType } from './components/TodoItem.vue'
 import TodoFooterVue from './components/TodoFooter.vue'
+import Draggable from 'vuedraggable'
 
 const newTodo = ref<string>()
 const todos = ref<ModelValueType[]>([])
