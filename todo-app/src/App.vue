@@ -4,14 +4,10 @@
     <div class="flex flex-row justify-center">
       <div class="todo-container">
         <TodoInputVue class="mb-1" v-model="newTodo" @keyup:enter="onEnter" />
-        <Draggable v-model="todos" item-key="value" group="todos">
+        <Draggable v-model="filteredTodos" animation="150" item-key="value" group="todos" handle=".dragger">
           <template #item="item">
-            <TodoItemVue
-              :model-value="item.element"
-              @update:model-value="onUpdate(item.index, $event)"
-              @delete-clicked="onDelete(item.index)"
-              class="mb-0.5"
-            />
+            <TodoItemVue :model-value="item.element" @update:model-value="onUpdate(item.index, $event)"
+              @delete-clicked="onDelete(item.index)" class="mb-0.5" />
           </template>
         </Draggable>
         <TodoFooterVue v-model="todos" @update:filtered-model-value="onUpdateFilter" />
@@ -22,11 +18,11 @@
 
 <script setup lang="ts">
 import AppTitleVue from './components/AppTitle.vue'
-import TodoInputVue from './components/TodoInput.vue'
-import { ref } from 'vue'
-import TodoItemVue, { type ModelValueType } from './components/TodoItem.vue'
-import TodoFooterVue from './components/TodoFooter.vue'
 import Draggable from 'vuedraggable'
+import TodoFooterVue from './components/TodoFooter.vue'
+import TodoInputVue from './components/TodoInput.vue'
+import TodoItemVue, { type ModelValueType } from './components/TodoItem.vue'
+import { ref } from 'vue'
 
 const newTodo = ref<string>()
 const todos = ref<ModelValueType[]>([])
@@ -41,7 +37,8 @@ function onEnter() {
   newTodo.value = ''
   todos.value.push({
     value: text,
-    checked: false
+    checked: false,
+    editable: false
   })
 }
 

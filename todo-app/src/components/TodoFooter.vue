@@ -1,17 +1,20 @@
 <template>
-  <div class="bg-white flex flex-row mt-1 p-3 justify-between" v-show="displayFooter">
+  <div class="todo-footer" v-show="displayFooter">
     <span class="mr-4 select-none">{{ itemsLeft }} items left</span>
-    <div class="flex flex-row mr-4 justify-around">
+    <div class="flex flex-row mr-4 justify-evenly">
       <template v-for="filterOption in filterOptions" :key="filterOption">
-        <label :for="filterOption" class="cursor-pointer mr-3">
-          <input :id="filterOption" type="radio" :value="filterOption" v-model="selectedFilter" />
+        <button type="button" class="filter-option" @click.stop.prevent="onSelectFilter(filterOption)" :class="{
+          'filter-enabled': filterOption === selectedFilter
+        }">
           {{ filterOption }}
-        </label>
+        </button>
       </template>
     </div>
-    <button v-show="displayClearOption" @click.stop.prevent="onClear" class="cursor-pointer">
-      Clear Completed
-    </button>
+    <div>
+      <button v-show="displayClearOption" @click.stop.prevent="onClear" class="cursor-pointer">
+        Clear Completed
+      </button>
+    </div>
   </div>
 </template>
 
@@ -44,13 +47,14 @@ const displayFooter = computed(() => model.value.length > 0)
 
 watch(
   selectedFilter,
-  (v) => {
+  (filterOption) => {
     let filteredTodos: ModelValueType[] = model.value
-    if (v === 'Active') {
+
+    if (filterOption === 'Active') {
       filteredTodos = model.value.filter((todo) => todo.checked === false)
-    } else if (v === 'Completed') {
+    } else if (filterOption === 'Completed') {
       filteredTodos = model.value.filter((todo) => todo.checked === true)
-    } else if (v === 'All') {
+    } else if (filterOption === 'All') {
       filteredTodos = model.value
     }
 
@@ -61,6 +65,10 @@ watch(
   }
 )
 
+function onSelectFilter(filterOption: string) {
+  selectedFilter.value = filterOption
+}
+
 function onClear() {
   for (const todoIndex in model.value) {
     const oldTodo = model.value[todoIndex]
@@ -68,3 +76,21 @@ function onClear() {
   }
 }
 </script>
+
+<style scoped>
+.todo-footer {
+  @apply bg-white flex flex-row font-sans mt-1 p-3 justify-start;
+}
+
+.filter-option {
+  @apply bg-white rounded border-transparent border-0.5 rounded cursor-pointer;
+}
+
+.filter-option:hover {
+  @apply border-red-100 border-opacity-50;
+}
+
+.filter-enabled {
+  @apply bg-red-50 shadow;
+}
+</style>
