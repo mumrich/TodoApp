@@ -16,6 +16,7 @@ import { computed, ref } from 'vue'
 import { onClickOutside, useDebounceFn } from '@vueuse/core'
 
 export interface TodoItem {
+  id: string,
   checked: boolean,
   text: string,
 }

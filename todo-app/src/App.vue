@@ -32,6 +32,7 @@ import TodoInputVue from './components/TodoInput.vue'
 import TodoItemVue, { type TodoItem } from './components/TodoItem.vue'
 import { ref, computed } from 'vue'
 import { useStorage, useManualRefHistory } from '@vueuse/core'
+import { v4 as uuidv4 } from 'uuid';
 
 interface TodoStorage {
   todos: TodoItem[],
@@ -59,21 +60,29 @@ const selectedFilter = computed<string | null>({
   get: () => todoStorage.value.filter,
   set: (v) => todoStorage.value = { ...todoStorage.value, filter: v }
 })
-const filteredTodos = computed(() => {
-  switch (selectedFilter.value) {
-    case "All":
-      return todos.value;
-    case "Active":
-      return todos.value.filter(todo => todo.checked === false)
-    case "Completed":
-      return todos.value.filter(todo => todo.checked === true)
-  }
+const filteredTodos = computed({
+  get: () => {
+    switch (selectedFilter.value) {
+      case "All":
+        return todos.value;
+      case "Active":
+        return todos.value.filter(todo => todo.checked === false)
+      case "Completed":
+        return todos.value.filter(todo => todo.checked === true)
+    }
 
-  return todos.value;
+    return todos.value;
+  },
+  set: (sortedTodos) => {
+    const forbiddenIds = sortedTodos.map(todo => todo.id)
+    const remainingTodos = todos.value.filter(todo => forbiddenIds.findIndex(id => id === todo.id) === -1)
+
+    todos.value = [...sortedTodos, ...remainingTodos]
+  }
 })
 
 function onEnter() {
-  todos.value = [...todos.value, { text: newTodo.value ?? '', checked: false }]
+  todos.value = [...todos.value, { id: uuidv4(), text: newTodo.value ?? '', checked: false }]
   newTodo.value = ''
 }
 
