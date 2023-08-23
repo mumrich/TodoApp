@@ -1,5 +1,6 @@
 {
-    "i18n-ally.localesPaths": [
-        "../../../../../../Users/hanne/source/repos/TodoApp/todo-app/src/i18n"
-    ]
+  "i18n-ally.localesPaths": [
+    "../../../../../../Users/hanne/source/repos/TodoApp/todo-app/src/i18n"
+  ],
+  "dotnet.defaultSolution": "TodoApp.sln"
 }
