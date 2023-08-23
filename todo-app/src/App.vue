@@ -3,6 +3,14 @@
     <AppTitleVue />
     <div class="flex flex-row justify-center">
       <div class="todo-container">
+        <div class="shadow bg-white flex justify-center mb-1">
+          <button class="history-btn" @click="undo" :disabled="canUndo === false">
+            <div class="i-mdi-undo"></div>
+          </button>
+          <button class="history-btn" @click="redo" :disabled="canRedo === false">
+            <div class="i-mdi-redo"></div>
+          </button>
+        </div>
         <TodoInputVue class="mb-1" v-model="newTodo" @keyup:enter="onEnter" />
         <Draggable v-model="filteredTodos" animation="150" item-key="value" group="todos" handle=".dragger">
           <template #item="item">
@@ -10,7 +18,7 @@
               @delete-clicked="onDelete(item.index)" class="mb-0.5" />
           </template>
         </Draggable>
-        <TodoFooterVue v-model="todos" @update:filtered-model-value="onUpdateFilter" />
+        <TodoFooterVue v-model:todos="todos" v-model:selected-filter="selectedFilter" :filter-options="filterOptions" />
       </div>
     </div>
   </section>
@@ -21,28 +29,55 @@ import AppTitleVue from './components/AppTitle.vue'
 import Draggable from 'vuedraggable'
 import TodoFooterVue from './components/TodoFooter.vue'
 import TodoInputVue from './components/TodoInput.vue'
-import TodoItemVue, { type ModelValueType } from './components/TodoItem.vue'
-import { ref } from 'vue'
+import TodoItemVue, { type TodoItem } from './components/TodoItem.vue'
+import { ref, computed } from 'vue'
+import { useStorage, useManualRefHistory } from '@vueuse/core'
 
-const newTodo = ref<string>()
-const todos = ref<ModelValueType[]>([])
-const filteredTodos = ref<ModelValueType[]>([])
-
-function onUpdateFilter(m: ModelValueType[]) {
-  filteredTodos.value = m
+interface TodoStorage {
+  todos: TodoItem[],
+  filter: string | null
 }
+
+const filterOptions = ['All', 'Active', 'Completed']
+
+const todoStorage = useStorage<TodoStorage>("todos", {
+  todos: [],
+  filter: null
+})
+
+const { commit, undo, redo, canUndo, canRedo } = useManualRefHistory(todoStorage)
+
+const newTodo = ref<string>("")
+const todos = computed<TodoItem[]>({
+  get: () => todoStorage.value.todos,
+  set: (v) => {
+    todoStorage.value = { ...todoStorage.value, todos: v }
+    commit()
+  }
+})
+const selectedFilter = computed<string | null>({
+  get: () => todoStorage.value.filter,
+  set: (v) => todoStorage.value = { ...todoStorage.value, filter: v }
+})
+const filteredTodos = computed(() => {
+  switch (selectedFilter.value) {
+    case "All":
+      return todos.value;
+    case "Active":
+      return todos.value.filter(todo => todo.checked === false)
+    case "Completed":
+      return todos.value.filter(todo => todo.checked === true)
+  }
+
+  return todos.value;
+})
 
 function onEnter() {
-  const text = newTodo.value ?? ''
+  todos.value = [...todos.value, { text: newTodo.value ?? '', checked: false }]
   newTodo.value = ''
-  todos.value.push({
-    value: text,
-    checked: false,
-    editable: false
-  })
 }
 
-function onUpdate(i: number, v: ModelValueType) {
+function onUpdate(i: number, v: TodoItem) {
   todos.value.splice(i, 1, v)
 }
 
@@ -68,5 +103,21 @@ body {
   @apply w-1/3;
   @apply flex flex-col;
   @apply shadow-2xl;
+}
+
+.history-btn {
+  @apply cursor-pointer;
+  @apply px-3 py-1 m-2 border-0 rounded bg-blue-50 shadow;
+  @apply text-2xl text-gray-500;
+  @apply flex flex-row;
+}
+
+.history-btn:not([disabled]):hover {
+  @apply shadow-md bg-red-50;
+}
+
+.history-btn:is([disabled]) {
+  @apply cursor-not-allowed;
+  @apply bg-gray-50;
 }
 </style>

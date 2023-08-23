@@ -3,8 +3,8 @@
     <div class="dragger i-mdi-drag-vertical"></div>
     <TodoItemCheckboxVue v-model="model.checked" />
     <div class="input-wrapper" :class="inputClass" ref="inputWrapper" @dblclick="onDoubleClick">
-      <input v-if="model.editable" v-model.lazy="model.value" />
-      <span v-else>{{ model.value }}</span>
+      <input v-if="editable" v-model="modelText" />
+      <span v-else>{{ model.text }}</span>
     </div>
     <div class="delete-btn i-mdi-delete-forever" @click="onDelete"></div>
   </div>
@@ -13,20 +13,19 @@
 <script setup lang="ts">
 import TodoItemCheckboxVue from './TodoItemCheckbox.vue'
 import { computed, ref } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import { onClickOutside, useDebounceFn } from '@vueuse/core'
 
-export interface ModelValueType {
+export interface TodoItem {
   checked: boolean,
-  editable: boolean,
-  value: string,
+  text: string,
 }
 
 const props = defineProps<{
-  modelValue: ModelValueType
+  modelValue: TodoItem
 }>()
 
 const emits = defineEmits<{
-  'update:modelValue': [value: ModelValueType]
+  'update:modelValue': [value: TodoItem]
   'delete-clicked': []
 }>()
 
@@ -35,27 +34,35 @@ const model = computed({
   set: (v) => emits('update:modelValue', v)
 })
 
+const debouncedModelTextSetter = useDebounceFn((v) => model.value.text = v, 500)
+
+const modelText = computed({
+  get: () => model.value.text,
+  set: (v) => {
+    debouncedModelTextSetter(v)
+  }
+})
+
 const inputWrapper = ref<HTMLDivElement | null>(null)
+const editable = ref(false)
 
 const inputClass = computed(() => ({
   'line-through': model.value.checked
 }))
 
 function onDelete() {
-  const answer = confirm(`Really delete '${model.value.value}'?`)
+  const answer = confirm(`Really delete '${model.value.text}'?`)
   if (answer === true) {
     emits('delete-clicked')
   }
 }
 
 function onDoubleClick() {
-  model.value = { ...model.value, editable: true }
+  editable.value = true;
 }
 
 onClickOutside(inputWrapper, () => {
-  if (model.value.editable === true) {
-    model.value = { ...model.value, editable: false }
-  }
+  editable.value = false;
 })
 </script>
 
