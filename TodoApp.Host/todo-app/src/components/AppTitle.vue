@@ -7,10 +7,10 @@
 <script setup lang="ts">
 const props = withDefaults(
   defineProps<{
-    modelValue?: string
+    modelValue?: string;
   }>(),
   {
-    modelValue: 'todos'
+    modelValue: "todos"
   }
-)
+);
 </script>

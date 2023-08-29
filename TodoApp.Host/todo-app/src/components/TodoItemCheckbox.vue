@@ -7,22 +7,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps<{
-  modelValue: boolean
-}>()
+  modelValue: boolean;
+}>();
 
 const emits = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
+  "update:modelValue": [value: boolean];
+}>();
 
 const checkedModel = computed({
   get: () => props.modelValue,
-  set: (v) => emits('update:modelValue', v)
-})
+  set: (v) => emits("update:modelValue", v)
+});
 
 function onClickChechbox() {
-  checkedModel.value = !checkedModel.value
+  checkedModel.value = !checkedModel.value;
 }
 </script>

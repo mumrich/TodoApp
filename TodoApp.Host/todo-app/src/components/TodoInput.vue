@@ -10,19 +10,19 @@
 
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue?: string
-}>()
+  modelValue?: string;
+}>();
 
 const emits = defineEmits<{
-  'update:modelValue': [value: string]
-  'keyup:enter': []
-}>()
+  "update:modelValue": [value: string];
+  "keyup:enter": [];
+}>();
 
 function onInput(e: Event) {
-  emits('update:modelValue', (e?.target as HTMLInputElement)?.value ?? '')
+  emits("update:modelValue", (e?.target as HTMLInputElement)?.value ?? "");
 }
 
 function onEnter() {
-  emits('keyup:enter')
+  emits("keyup:enter");
 }
 </script>
